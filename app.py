@@ -30,7 +30,7 @@ def sentiment(headlines):
     return(senti(df))
 
 def news():
-    url=('https://newsapi.org/v2/everything?q=covid19 in india&q=corona virus in india&q=death due to corona in india&apiKey=02928102f09744b080d5252e2653f791')
+    url=('https://newsapi.org/v2/everything?q=covid19 in india&q=corona virus in india&q=death due to corona in india&apiKey=xxxxxxxxxxxxxxxxxxxxxxx')
     response = requests.get(url)
     y=response.text
     jsonData = json.loads(y)
@@ -45,7 +45,7 @@ def news():
         p.append(f[i])
 
     headers = {
-    'Subscription-Key': '3009d4ccc29e4808af1ccc25c69b4d5d',
+    'Subscription-Key': 'xxxxxxxxxxxxxxxxxxxxxxxxxx',
     }
 
     response = requests.get('https://api.smartable.ai/coronavirus/news/IN', headers=headers)
