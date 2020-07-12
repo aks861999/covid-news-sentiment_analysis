@@ -8,24 +8,43 @@ import dash_core_components as dcc
 import plotly.graph_objects as go
 
 def segment(df):
+    ## Form a pandas series with all value counts in the "Label" column in the Dataframe "df" ##
     counts = df.label.value_counts(normalize=True) * 100
+    
+    ## Convert pandas series to a dataframe ##
     counts=counts.to_frame()
-    counts['col']=counts.index
-    counts.sort_values(by=['col'],inplace=True)
+    
+    ## Form a column named 'Segment' that consist of '+1', '-1' and  '0'  for positive , negative , neutral respectively ##
+    counts['segment']=counts.index
+    counts.sort_values(by=['segment'],inplace=True)
+    
+    ## Build the Figure basically a pie chart with graph object of plotly ## 
     fig = go.Figure(data=[go.Pie(labels=['Negative','Neutral','Positive'], values=counts['label'])])
     fig.update_layout(margin=dict(t=0, b=0, l=0, r=0),template='plotly_dark')
+    
+    ## make two lists for positive and negative news ##
     positive=list(df[df['label'] ==  1].headlines)
     negative=list(df[df['label'] == -1].headlines)
+    
     return (fig,positive,negative)
 
 def sentiment(headlines):
+    
+    ## make an empty dataframe with columns namely "headlines" and "value" ##
     df=pd.DataFrame(columns=['headlines','value'])
+    
     for line in range(len(headlines)):
         analysis=TextBlob(headlines[line])
         df.loc[line]=[headlines[line],analysis.sentiment[0]]
+        
+    ## add a column to the dataframe with all values defined to Zero ##
     df['label'] = 0
-    df.loc[df['value'] > 0, 'label'] = 1
-    df.loc[df['value'] < 0, 'label'] = -1
+    
+    ## Now Classify the headlines by Labelling +1 and -1 represing positive and negative news respectively
+    df.loc[df['value'] > 0.2, 'label'] = 1
+    df.loc[df['value'] < 0.2, 'label'] = -1
+    
+    ## Go to the 'segment' function for segmentation purpose ##
     return(segment(df))
 
 def get_news():
@@ -34,13 +53,17 @@ def get_news():
     response = requests.get(url)
     y=response.text
     jsonData = json.loads(y)
+    
     z=jsonData['articles']
     z=pd.DataFrame(z)
     f=z['description']
     f=f.dropna(how='all')
     f=f.reset_index(drop=True)
+    
     p=list()
-
+    
+    
+    ## form a list that consists of news extarcted from NewsAPI ##
     for i in range(len(f)):
         p.append(f[i])
     
@@ -57,9 +80,12 @@ def get_news():
     data=jsonData['news']
     df=pd.DataFrame(data)
     df=df['excerpt']
+    
+    ## Again add all the news extracted from SmartableAI to the previously created list ##
     for i in range(len(df)):
         p.append(df[i])
     
+    ## Go to the 'sentiment' function for sentiment classification ##
     return(sentiment(p),'India')
 
 external_stylesheets = ['https://codepen.io/chriddyp/pen/bWLwgP.css']
@@ -67,14 +93,20 @@ external_stylesheets = ['https://codepen.io/chriddyp/pen/bWLwgP.css']
 app = dash.Dash(__name__, external_stylesheets=external_stylesheets)
 app.title = 'Covid-News-by-AK'
 server=app.server
+
+
+## Get the Figure, List of Positive News and Negative News ##
 x=get_news()
-    
+
+
+## the object 'x' gets list consist of a tuple (figure,positive news,negative news) and the country name ##
 fig=x[0][0]
 pos=x[0][1]
 neg=x[0][2]
 country_name=x[1]
    
 app.layout = html.Div([
+    
     html.Div([
     html.H1(children='COVID-19 Related Realtime News and Sentiment Classification For ('+country_name+')'),
     html.H2(children='The Positive News in '+country_name+' Is\n'),
@@ -123,7 +155,7 @@ app.layout = html.Div([
     
     
     html.Div([
-    html.Footer(children='Made With 💖 by Akash Biswas, Only for You'),],style={'background-color': '#000000','color':'#f3f5f4','textAlign': 'center','font-weight': 'bold'})
+    html.Footer(children='Made With 💖 by Akash Biswas, Only for You'),],style={'background-color': '#0000FF','color':'#f3f5f4','textAlign': 'center','font-weight': 'bold'})
 ],style={'background-color': '#000000','color':'#f3f5f4'})
 
 if __name__ == '__main__':
