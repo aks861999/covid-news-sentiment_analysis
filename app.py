@@ -1,5 +1,3 @@
-from ip2geotools.databases.noncommercial import DbIpCity
-import plotly.graph_objects as go
 from textblob import TextBlob
 import json
 import requests
@@ -7,6 +5,7 @@ import pandas as pd
 import dash
 import dash_html_components as html
 import dash_core_components as dcc
+import plotly.graph_objects as go
 
 def segment(df):
     counts = df.label.value_counts(normalize=True) * 100
