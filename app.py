@@ -8,7 +8,7 @@ import dash
 import dash_html_components as html
 import dash_core_components as dcc
 
-def senti(df):
+def segment(df):
     counts = df.label.value_counts(normalize=True) * 100
     counts=counts.to_frame()
     counts['col']=counts.index
@@ -27,9 +27,10 @@ def sentiment(headlines):
     df['label'] = 0
     df.loc[df['value'] > 0, 'label'] = 1
     df.loc[df['value'] < 0, 'label'] = -1
-    return(senti(df))
+    return(segment(df))
 
-def news():
+def get_news():
+    #########   go to https://newsapi.org/ and grab your api key   ##########
     url=('https://newsapi.org/v2/everything?q=covid19 in india&q=corona virus in india&q=death due to corona in india&apiKey=xxxxxxxxxxxxxxxxxxxxxxx')
     response = requests.get(url)
     y=response.text
@@ -43,7 +44,8 @@ def news():
 
     for i in range(len(f)):
         p.append(f[i])
-
+    
+    ########### go to https://smartable.ai to grab your Subscription key ################
     headers = {
     'Subscription-Key': 'xxxxxxxxxxxxxxxxxxxxxxxxxx',
     }
@@ -66,7 +68,7 @@ external_stylesheets = ['https://codepen.io/chriddyp/pen/bWLwgP.css']
 app = dash.Dash(__name__, external_stylesheets=external_stylesheets)
 app.title = 'Covid-News-by-AK'
 server=app.server
-x=news()
+x=get_news()
     
 fig=x[0][0]
 pos=x[0][1]
