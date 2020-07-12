@@ -1,8 +1,9 @@
-from textblob import TextBlob
 import json
 import requests
 import pandas as pd
 import dash
+import nltk
+nltk.data.path.append('./nltk.txt')
 import dash_html_components as html
 import dash_core_components as dcc
 import plotly.graph_objects as go
@@ -23,33 +24,56 @@ def segment(df):
     fig.update_layout(margin=dict(t=0, b=0, l=0, r=0),template='plotly_dark')
     
     ## make two lists for positive and negative news ##
-    positive=list(df[df['label'] ==  1].headlines)
-    negative=list(df[df['label'] == -1].headlines)
+    positive=list(df[df['label'] ==  1].headline)
+    negative=list(df[df['label'] == -1].headline)
     
     return (fig,positive,negative)
 
+
 def sentiment(headlines):
     
-    ## make an empty dataframe with columns namely "headlines" and "value" ##
-    df=pd.DataFrame(columns=['headlines','value'])
     
-    for line in range(len(headlines)):
-        analysis=TextBlob(headlines[line])
-        df.loc[line]=[headlines[line],analysis.sentiment[0]]
-        
-    ## add a column to the dataframe with all values defined to Zero ##
+    from nltk.sentiment.vader import SentimentIntensityAnalyzer as SIA
+    sia = SIA()
+    
+    results = []
+    
+    
+    for line in headlines:
+        pol_score = sia.polarity_scores(line)
+        pol_score['headline'] = line
+        results.append(pol_score)
+    
+    df = pd.DataFrame.from_records(results)
+    
     df['label'] = 0
+    df.loc[df['compound'] > 0.17, 'label'] = 1
+    df.loc[df['compound'] < -0.17, 'label'] = -1
     
-    ## Now Classify the headlines by Labelling +1 and -1 represing positive and negative news respectively
-    df.loc[df['value'] > 0.2, 'label'] = 1
-    df.loc[df['value'] < 0.2, 'label'] = -1
-    
-    ## Go to the 'segment' function for segmentation purpose ##
     return(segment(df))
 
+
 def get_news():
+    
+    p=list()
+
+    url=('https://gnews.io/api/v3/search?country=in&q=corona&q=covid-19&max=100&token=xxxxxxxxxxxxxxxxxxxxxxxxxxxxxx')
+    response=requests.get(url)
+    news=response.text
+    jsondata=json.loads(news)
+    jsondata['articles']
+    df=pd.DataFrame(jsondata)
+    for i in range(len(df)):
+        p.append(df['articles'][i]['description'])
+
+
+
+
+
+
+
     #########   go to https://newsapi.org/ and grab your api key   ##########
-    url=('https://newsapi.org/v2/everything?q=covid19 in india&q=corona virus in india&q=death due to corona in india&apiKey=xxxxxxxxxxxxxxxxxxxxxxx')
+    url=('https://newsapi.org/v2/everything?q=covid19 in india&q=corona virus in india&q=death due to corona in india&apiKey=xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx')
     response = requests.get(url)
     y=response.text
     jsonData = json.loads(y)
@@ -60,7 +84,7 @@ def get_news():
     f=f.dropna(how='all')
     f=f.reset_index(drop=True)
     
-    p=list()
+    
     
     
     ## form a list that consists of news extarcted from NewsAPI ##
@@ -69,7 +93,7 @@ def get_news():
     
     ########### go to https://smartable.ai to grab your Subscription key ################
     headers = {
-    'Subscription-Key': 'xxxxxxxxxxxxxxxxxxxxxxxxxx',
+    'Subscription-Key': 'xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx',
     }
 
     response = requests.get('https://api.smartable.ai/coronavirus/news/IN', headers=headers)
