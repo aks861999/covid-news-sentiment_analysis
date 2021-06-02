@@ -9,7 +9,7 @@ textblob==0.15.3
 ujson==1.35
 json5==0.9.4
 python-jsonrpc-server==0.3.4
-urllib3==1.25.9
+urllib3==1.26.5
 pycountry==19.8.18
 idna==2.8
 requests==2.24.0
