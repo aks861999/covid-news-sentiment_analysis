@@ -6,7 +6,7 @@ ip2geotools==0.1.5
 geoip2==3.0.0
 gunicorn==20.0.4
 textblob==0.15.3
-ujson==1.35
+ujson==5.2.0
 json5==0.9.4
 python-jsonrpc-server==0.3.4
 urllib3==1.25.9
